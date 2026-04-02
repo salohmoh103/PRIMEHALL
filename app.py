@@ -9,7 +9,7 @@ app.secret_key = 'primhall_ultra_key_2026'
 # --- ⚙️ إعدادات ديسكورد الخاصة بك ---
 CLIENT_ID = '1489184502424014868'
 CLIENT_SECRET = '9TdmKUL_i34vX0N-6xnGq-udGD3DE354'
-REDIRECT_URI = 'http://127.0.0.1:5000/callback'
+REDIRECT_URI = 'https://primehall.onrender.com/callback'
 WEBHOOK_URL = "https://discord.com/api/webhooks/1489179488423252080/oXyTg6UgqM9Y9G84zvsOFz2vcu6mTwmAGC5ojeUFHbWItn2CttCZbBhsaR1_Qk2b5IYY"
 
 # روابط Discord API
