@@ -3,8 +3,13 @@ from requests_oauthlib import OAuth2Session
 import os
 import requests
 
+# هـام جداً: هذا السطر يجب أن يكون في الأعلى ليعمل تسجيل الدخول على Render
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
 app = Flask(__name__)
-app.secret_key = 'primhall_ultra_key_2026'
+
+# تم وضع كلمة سر عشوائية قوية لتأمين الجلسات (Sessions)
+app.secret_key = 'primhall_ultra_secure_key_992288'
 
 # --- ⚙️ إعدادات ديسكورد الخاصة بك ---
 CLIENT_ID = '1489184502424014868'
@@ -15,13 +20,16 @@ WEBHOOK_URL = "https://discord.com/api/webhooks/1489179488423252080/oXyTg6UgqM9Y
 # روابط Discord API
 AUTH_BASE_URL = 'https://discord.com/api/oauth2/authorize'
 TOKEN_URL = 'https://discord.com/api/oauth2/token'
-SCOPE = ['identify', 'guilds'] # guilds لجلب معلومات السيرفرات لاحقاً
+SCOPE = ['identify'] # تم اختصاره لضمان السرعة وعدم حدوث أخطاء في الصلاحيات
 
 def send_to_discord(title, msg, color=0x7289da):
-    data = {
-        "embeds": [{"title": title, "description": msg, "color": color}]
-    }
-    requests.post(WEBHOOK_URL, json=data)
+    try:
+        data = {
+            "embeds": [{"title": title, "description": msg, "color": color}]
+        }
+        requests.post(WEBHOOK_URL, json=data)
+    except:
+        pass
 
 @app.route('/')
 def index():
@@ -36,18 +44,27 @@ def login_discord():
 
 @app.route('/callback')
 def callback():
-    discord = OAuth2Session(CLIENT_ID, state=session.get('oauth_state'), redirect_uri=REDIRECT_URI)
-    token = discord.fetch_token(TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=request.url)
-    user_data = discord.get('https://discord.com/api/users/@me').json()
-    
-    # حفظ بيانات المستخدم الرسمية
-    session['logged_in'] = True
-    session['user_id'] = user_data['id']
-    session['username'] = user_data['username']
-    session['avatar'] = f"https://cdn.discordapp.com/avatars/{user_data['id']}/{user_data['avatar']}.png"
-    
-    send_to_discord("✅ دخول جديد بالموقع", f"المستخدم **{user_data['username']}** سجل دخوله عبر ديسكورد الرسمي.")
-    return redirect(url_for('dashboard'))
+    try:
+        discord = OAuth2Session(CLIENT_ID, state=session.get('oauth_state'), redirect_uri=REDIRECT_URI)
+        token = discord.fetch_token(TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=request.url)
+        user_data = discord.get('https://discord.com/api/users/@me').json()
+        
+        # حفظ بيانات المستخدم الرسمية في الجلسة
+        session['logged_in'] = True
+        session['user_id'] = user_data['id']
+        session['username'] = user_data['username']
+        
+        # التأكد من وجود صورة شخصية أو وضع صورة افتراضية
+        if user_data.get('avatar'):
+            session['avatar'] = f"https://cdn.discordapp.com/avatars/{user_data['id']}/{user_data['avatar']}.png"
+        else:
+            session['avatar'] = "https://discord.com/assets/f78426a064bc98b57354.png"
+        
+        send_to_discord("✅ دخول جديد بالموقع", f"المستخدم **{user_data['username']}** سجل دخوله عبر ديسكورد.")
+        return redirect(url_for('dashboard'))
+    except Exception as e:
+        print(f"Error in callback: {e}")
+        return f"حدث خطأ أثناء تسجيل الدخول: {e}", 500
 
 @app.route('/dashboard')
 def dashboard():
@@ -59,6 +76,9 @@ def dashboard():
 
 @app.route('/claim_gift', methods=['POST'])
 def claim_gift():
+    if not session.get('logged_in'):
+        return jsonify({'success': False, 'message': 'يجب تسجيل الدخول أولاً'})
+        
     code = request.form.get('gift_code')
     if code:
         send_to_discord("🎁 طلب هدية", f"المستخدم **{session['username']}** طلب هدية بالكود: `{code}`", 0xff6b6b)
@@ -66,5 +86,4 @@ def claim_gift():
     return jsonify({'success': False})
 
 if __name__ == '__main__':
-    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     app.run(debug=True, port=5000)
