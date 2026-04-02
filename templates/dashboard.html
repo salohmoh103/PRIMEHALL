@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primhall Community - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, #0f0f23 0%, #2d1b69 50%, #667eea 100%); 
+            min-height: 100vh; color: white; overflow-x: hidden;
+        }
+        .navbar { 
+            background: rgba(0,0,0,0.3); backdrop-filter: blur(20px); 
+            padding: 15px 50px; position: fixed; width: 100%; z-index: 1000; 
+            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .logo { font-size: 24px; font-weight: 700; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .user-nav { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2); }
+        .user-nav img { width: 35px; border-radius: 50%; border: 2px solid #4ecdc4; }
+
+        .main-content { margin-top: 100px; padding: 50px; max-width: 1400px; margin: 100px auto 0; }
+        .hero { text-align: center; margin-bottom: 80px; animation: fadeInUp 1s ease-out; }
+        .hero-avatar { width: 130px; height: 130px; border-radius: 50%; border: 5px solid #fff; box-shadow: 0 0 30px rgba(78, 205, 196, 0.5); margin-bottom: 20px; }
+        .hero h1 { font-size: 50px; font-weight: 800; margin-bottom: 10px; background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .feature-card { 
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); 
+            border-radius: 25px; padding: 40px; text-align: center; 
+            border: 1px solid rgba(255,255,255,0.1); transition: 0.4s; cursor: pointer;
+        }
+        .feature-card:hover { transform: translateY(-15px); background: rgba(255,255,255,0.1); border-color: #ff6b6b; }
+        .feature-icon { font-size: 50px; margin-bottom: 20px; color: #4ecdc4; }
+
+        /* قسم الهدايا الفخم */
+        .gifts-section { 
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); 
+            color: #333; margin-top: 60px; padding: 60px; border-radius: 30px; text-align: center; 
+        }
+        .gifts-btn { 
+            background: linear-gradient(45deg, #667eea, #764ba2); color: white; 
+            border: none; padding: 20px 50px; border-radius: 50px; 
+            font-size: 20px; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+
+        /* المودالز */
+        .modal { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); }
+        .modal-content { background: #1a1a2e; margin: 10% auto; padding: 40px; width: 90%; max-width: 500px; border-radius: 25px; border: 2px solid #4ecca3; text-align: center; position: relative; }
+        
+        .modal-content input { width: 100%; padding: 15px; margin: 20px 0; border-radius: 12px; border: none; background: #252545; color: white; text-align: center; }
+        .action-btn { background: #4ecca3; color: #1a1a2e; padding: 12px 30px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
+
+        .community-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+        .community-item { 
+            padding: 20px; border-radius: 15px; text-decoration: none; color: white; 
+            font-weight: bold; border: 1px solid rgba(255,255,255,0.1); 
+            transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .item-amongus { background: #ff4d4d22; border-color: #ff4d4d; }
+        .item-minecraft { background: #4caf5022; border-color: #4caf50; }
+        .item-valorant { background: #ff465522; border-color: #ff4655; }
+        .item-anime { background: #9b59b622; border-color: #9b59b6; }
+
+        @keyframes fadeInUp { from { opacity:0; transform: translateY(30px); } to { opacity:1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo">🌟 Primhall Community</div>
+        <div class="user-nav"><span>{{ username }}</span><img src="{{ avatar }}"></div>
+    </div>
+
+    <div class="main-content">
+        <div class="hero">
+            <img src="{{ avatar }}" class="hero-avatar">
+            <h1>مرحباً بك، {{ username }}</h1>
+            <p>أنت الآن في قلب عالم Primhall الكامل ✨</p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-rocket"></i></div>
+                <h3>محتوى حصري</h3>
+                <p>استمتع بأحدث المحتويات والألعاب</p>
+            </div>
+            <div class="feature-card" onclick="openModal('communityModal')">
+                <div class="feature-icon"><i class="fas fa-users"></i></div>
+                <h3>مجتمع قوي</h3>
+                <p>دخول مباشر للقنوات (طـنغ) 🚀</p>
+            </div>
+            <div class="feature-card" onclick="openModal('giftModal')">
+                <div class="feature-icon"><i class="fas fa-gift"></i></div>
+                <h3>هدايا مميزة</h3>
+                <p>فعل أكواد الجوائز الخاصة بك</p>
+            </div>
+        </div>
+
+        <div class="gifts-section">
+            <button class="gifts-btn" onclick="openModal('giftModal')">
+                🎁 تفعيل هدايا المستخدمين
+            </button>
+        </div>
+    </div>
+
+    <div id="communityModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color:#4ecdc4">🚀 غرف المجتمع</h3>
+            <div class="community-grid">
+                <a href="discord://discord.com/channels/1482480980538425558/1486731173064474715" class="community-item item-amongus"><i class="fas fa-ghost"></i> AMONG US</a>
+                <a href="discord://discord.com/channels/1482480980538425558/1486729730895118337" class="community-item item-minecraft"><i class="fas fa-cube"></i> MINECRAFT</a>
+                <a href="discord://discord.com/channels/1482480980538425558/1486731173064474715" class="community-item item-valorant"><i class="fas fa-crosshairs"></i> VALORANT</a>
+                <a href="discord://discord.com/channels/1482480980538425558/1487872378712232256" class="community-item item-anime"><i class="fas fa-tv"></i> ANIME WATCH</a>
+            </div>
+            <p style="margin-top:20px; cursor:pointer; opacity:0.6" onclick="closeModal('communityModal')">إغلاق</p>
+        </div>
+    </div>
+
+    <div id="giftModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color:#4ecca3">🎉 تفعيل الكود</h3>
+            <input type="text" id="gCode" placeholder="PRIM-XXXX-XXXX">
+            <button class="action-btn" onclick="submitGift()">تفعيل الآن</button>
+            <p style="margin-top:15px; cursor:pointer; opacity:0.6" onclick="closeModal('giftModal')">إلغاء</p>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        
+        async function submitGift() {
+            const code = document.getElementById('gCode').value;
+            if(!code) return alert("أدخل الكود أولاً!");
+            const formData = new URLSearchParams();
+            formData.append('gift_code', code);
+            const res = await fetch('/claim_gift', { method: 'POST', body: formData });
+            if(res.ok) { alert('✅ تم إرسال الكود! تابع ديسكورد.'); closeModal('giftModal'); }
+        }
+
+        window.onclick = function(e) { if(e.target.className === 'modal') e.target.style.display = 'none'; }
+    </script>
+</body>
+</html>
