@@ -30,7 +30,7 @@ with app.app_context():
 
 # --- إعدادات ديسكورد الخاصة بك ---
 CLIENT_ID = '1489184502424014868'
-CLIENT_SECRET = 'v9kVmSfvbnbU7vYH12sN7Y_OH6ZFPnoh'
+CLIENT_SECRET = 'fczQueuo4BS1qX9RG9beYDAVSwQyNLVH'
 REDIRECT_URI = 'https://primehall.onrender.com/callback'
 WEBHOOK_URL = "https://discord.com/api/webhooks/1489179488423252080/oXyTg6UgqM9Y9G84zvsOFz2vcu6mTwmAGC5ojeUFHbWItn2CttCZbBhsaR1_Qk2b5IYY"
 
