@@ -28,7 +28,7 @@ with app.app_context():
 
 # --- إعدادات ديسكورد المحدثة ---
 CLIENT_ID = '1489184502424014868'
-CLIENT_SECRET = 'ullNU8GFb76QcOnVl1hs3FSZepsqFpn1' # السيكرت الجديد الذي أرسلته الآن
+CLIENT_SECRET = 'hgi1l6_zIzgjZpUsKU0TiptKOENdz8m6' # السيكرت الجديد الذي أرسلته الآن
 # الرابط المعتمد لمنصة Railway
 REDIRECT_URI = 'https://primehall-production.up.railway.app/callback'
 WEBHOOK_URL = "https://discord.com/api/webhooks/1489179488423252080/oXyTg6UgqM9Y9G84zvsOFz2vcu6mTwmAGC5ojeUFHbWItn2CttCZbBhsaR1_Qk2b5IYY"
