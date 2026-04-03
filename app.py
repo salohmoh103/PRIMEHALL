@@ -27,7 +27,7 @@ with app.app_context():
 # --- إعدادات ديسكورد المححدثة ---
 CLIENT_ID = '1489184502424014868'
 CLIENT_SECRET = 'fczQueuo4BS1qX9RG9beYDAVSwQyNLVH' # المفتاح الجديد الذي أرسلته
-REDIRECT_URI = 'https://primehall.onrender.com/callback'
+REDIRECT_URI = 'https://primehall-production.up.railway.app/callback'
 
 @app.route('/')
 def index():
